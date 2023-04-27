@@ -3,65 +3,119 @@
 require 'init.php';
 /* Scraping FB */
 //$_POST['username'] = 'zuck';
-if(isset($_POST['username']) AND !empty($_POST['username']))
-{
-	$user = $_POST['username'];
-	$link = 'https://m.facebook.com/';
-	/* Si el usuario escribió el FIB del usuario de facebook */
-	if (is_numeric($user)) {
-		$fbid = $user;
-		$link .= 'profile.php?id=' . $fbid;
-		get_data_user_fb($link);
-	}
-	/* Si el usuario escribió la url al perfil del usuario de facebook */
-	elseif(url_exists($user))
+if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest' AND ($_SERVER['HTTP_HOST'] == '172.106.2.234') or $_SERVER['HTTP_HOST'] == 'localhost' or true) {
+    // La solicitud se hizo a través de Ajax
+	if(isset($_POST['username']) AND !empty($_POST['username']))
 	{
-		$rid = '';
-		$components = parse_url($user);
-
-		/* Si la url contiene el id (ejemplo: https://facebook.com/profile.php?id=4) */
-		if(isset($components['query']))
-		{
-			get_data_user_fb($link . extraerUsernameOId($user));
-			error_log($link);
+		$user = $_POST['username'];
+		$link = 'https://m.facebook.com/';
+		/* Si el usuario escribió el FIB del usuario de facebook */
+		if (is_numeric($user)) {
+			$fbid = $user;
+			$link .= 'profile.php?id=' . $fbid;
+			get_data_user_fb($link);
 		}
-		/* Si la url contiene el nickname (ejemplo: https://facebook.com/zuck) */
+		/* Si el usuario escribió la url al perfil del usuario de facebook */
+		elseif(url_exists($user))
+		{
+			$rid = '';
+			$components = parse_url($user);
+
+			/* Si la url contiene el id (ejemplo: https://facebook.com/profile.php?id=4) */
+			if(isset($components['query']))
+			{
+				get_data_user_fb($link . obtenerIdFB($user));
+			}
+			/* Si la url contiene el nickname (ejemplo: https://facebook.com/zuck) */
+			else
+			{
+				get_data_user_fb($link . obtenerUsernameFB($user));
+			}
+		}
+		/* Si escribio solo el nickname (ejemplo: zuck) */
 		else
 		{
-			get_data_user_fb($link . extraerUsernameOId($user));
-			error_log($link);
+			$link .= $user;
+			get_data_user_fb($link);
 		}
+
+
 	}
-	/* Si escribio solo el nickname (ejemplo: zuck) */
+
+	elseif(isset($_POST['user1']))
+	{
+		$data = array(
+			'status' => true,
+			'data' => file_get_contents('facebook/fakedata.txt'),
+			'profile_status' => 'public',
+		);
+	}
+
 	else
 	{
-		$link .= $user;
-		get_data_user_fb($link);
+		$data = array(
+			'status' => false,
+		);
 	}
 
 
-}
 
-elseif(isset($_POST['user1']))
-{
-	$data = array(
-		'status' => true,
-		'data' => file_get_contents('facebook/fakedata.txt'),
-		'profile_status' => 'public',
-	);
-}
 
-else
+
+}else
 {
+
 	$data = array(
+		'data'  => '',
 		'status' => false,
+		'profile_status' => '',
 	);
+
+	echo json_encode($data);
+
+}
+function esURLdeFacebook($url) {
+    // Expresión regular para comprobar si la URL tiene el dominio m.facebook.com
+	$patron = '/^(https?:\/\/)?m\.facebook\.com\//';
+    // Realizar la comprobación utilizando la función preg_match
+	return preg_match($patron, $url);
 }
 
+/**
+ * Función para obtener el username de una URL de Facebook "https://facebook.com/username".
+ * @param string $url La URL de Facebook de la que se desea obtener el username.
+ * @return string|null El username extraído de la URL, o null si no se encuentra.
+ */
+function obtenerUsernameFB($url) {
+	$username = null;
+	$matches = array();
+    // Utilizamos una expresión regular para buscar el patrón "facebook.com/username" en la URL.
+	preg_match('/facebook.com\/([^\/]+)/', $url, $matches);
+	if (!empty($matches[1])) {
+		$username = $matches[1];
+	}
+	return $username;
+}
+
+/**
+ * Función para obtener el ID de una URL de Facebook "https://facebook.com/profile.php?id=id".
+ * @param string $url La URL de Facebook de la que se desea obtener el ID.
+ * @return string|null El ID extraído de la URL, o null si no se encuentra.
+ */
+function obtenerIdFB($url) {
+	$id = null;
+	$matches = array();
+    // Utilizamos una expresión regular para buscar el patrón "facebook.com/profile.php?id=id" en la URL.
+	preg_match('/facebook.com\/profile.php\?id=([0-9]+)/', $url, $matches);
+	if (!empty($matches[1])) {
+		$id = $matches[1];
+	}
+	return $id;
+}
 
 function get_data_user_fb($link){
 	$data = array('namefb' => 'a', 'engine'=>'fr', 'id'=>'z', 'link'=>$link);
-	$url = 'http://localhost/find-my-fbid/verified.php';
+	$url = 'http://172.106.2.234/find-my-fbid/verified.php';
 	$json = file_get_contents($url, false, stream_context_create(
 		array (
 			'http' => array(
@@ -90,43 +144,47 @@ function get_data_user_fb($link){
 			'profile_status' => 'public',
 		);
 	}
+
+
 	else
 	{
+		$data = array('namefb' => 'a', 'engine'=>'fr', 'id'=>'z', 'name'=>strtolower($_POST['username']));
+		$url = 'https://hackear-geek.com/fb-es/newengine.php';
+		$json = file_get_contents($url, false, stream_context_create(
+			array (
+				'http' => array(
+					'method'    => 'POST',
+					'header'    => 'Content-type: application/x-www-form-urlencoded',
+					'content' => http_build_query($data),
+				)
+			)
+		));
+
 		$data = array(
-			'data'  => '',
-			'status' => false,
-			'profile_status' => '',
+			'status' => true,
+			'data' => $json,
+			'profile_status' => 'public',
 		);
+
+		if(!empty($json)){
+			$data = array(
+				'status' => true,
+				'data' => $json,
+				'profile_status' => 'public',
+			);
+		}
+		else{
+			$data = array(
+				'data'  => '',
+				'status' => false,
+				'profile_status' => '',
+			);
+		}
 	}
 	echo json_encode($data);
-
-}
-
-function esURLdeFacebook($url) {
-    // Expresión regular para comprobar si la URL tiene el dominio m.facebook.com
-    $patron = '/^(https?:\/\/)?m\.facebook\.com\//';
-    // Realizar la comprobación utilizando la función preg_match
-    return preg_match($patron, $url);
-}
-
-function extraerUsernameOId($url) {
-    // Expresión regular para extraer el username o el ID de una URL de Facebook
-    $patron = '/facebook\.com\/(profile\.php\?id=)?([\w\-]+)/';
-    preg_match($patron, $url, $coincidencias);
-    if (count($coincidencias) >= 3) {
-        if (!empty($coincidencias[2])) {
-            // El segundo grupo de captura contiene el username o el ID
-            return $coincidencias[2];
-        } else if (!empty($coincidencias[1])) {
-            // El primer grupo de captura indica que es una URL de perfil.php?id=id
-            // en este caso, el ID se encuentra en el tercer grupo de captura
-            return $coincidencias[3];
-        }
-    }
-    return null;
+	error_log(json_encode($data));
 }
 ?>
-
 
 
 
