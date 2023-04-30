@@ -8,7 +8,7 @@ if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUE
 	if(isset($_POST['username']) AND !empty($_POST['username']))
 	{
 		$user = $_POST['username'];
-		$link = 'https://m.facebook.com/';
+		$link = 'https://mbasic.facebook.com/';
 		/* Si el usuario escribió el FIB del usuario de facebook */
 		if (is_numeric($user)) {
 			$fbid = $user;
@@ -115,7 +115,7 @@ function obtenerIdFB($url) {
 
 function get_data_user_fb($link){
 	$data = array('namefb' => 'a', 'engine'=>'fr', 'id'=>'z', 'link'=>$link);
-	$url = 'http://172.106.2.234/find-my-fbid/verified.php';
+	$url = 'http://hackear.mx.test/hackear-mx/find-my-fbid/verified.php';
 	$json = file_get_contents($url, false, stream_context_create(
 		array (
 			'http' => array(

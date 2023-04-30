@@ -3,47 +3,50 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\Cookie;
 
 require_once('selenium/vendor/autoload.php');
 Class FindMyId{
 
-  /* Contiene la instancia del controlador de remoto de WebDriver */
-  public $driver;
-  /**/
-  public $data = array();
+	/* Contiene la instancia del controlador de remoto de WebDriver */
+	public $driver;
+	/**/
+	public $data = array();
 
-  public function __construct($serverUrl, $url)
-  {
-    $this->createWebDriver($serverUrl, $url);
+	public function __construct($serverUrl, $url)
+	{
+		$this->createWebDriver($serverUrl, $url);
 
-    $this->data = array(
-      'name' => $this->getFBName(),
-      'fbid' => $this->getFBID(),
-      'photo'=> $this->getPhotoProfile(),
-      'verified' => $this->getUserVerified(),
-    );
+		$this->data = array(
+			'name' => $this->getFBName(),
+			'fbid' => $this->getFBID(),
+			'photo'=> $this->getPhotoProfile(),
+			'verified' => $this->getUserVerified(),
+		);
 
-    $this->driver->quit();
-  }
+		$this->driver->quit();
+	}
 
-  public function createWebDriver($serverUrl, $url)
-  {
+	public function createWebDriver($serverUrl, $url)
+	{
 
     // Configurar opciones de Chrome
-    $options = new ChromeOptions();
-    $options->addArguments(['--disable-gpu','--headless']);
-
+		$options = new ChromeOptions();
+		//$options->addArguments(['--disable-gpu','--headless']);
+		$options->addArguments(['user-data-dir=C:/userchrome']);
     // Configurar opciones de DesiredCapabilities
-    $capabilities = DesiredCapabilities::chrome();
-    $capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
+		$capabilities = DesiredCapabilities::chrome();
+
+		$capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
 
     // Crear una instancia del controlador remoto de WebDriver usando Chrome
-    $this->driver = RemoteWebDriver::create($serverUrl, $capabilities);
+		$this->driver = RemoteWebDriver::create($serverUrl, $capabilities);
+
 
     // Go to URL
-    $this->driver->get($url);
+		$this->driver->get($url);
 
-  }
+	}
 
   /**
    * Extrae Nombre del usuario
@@ -53,31 +56,31 @@ Class FindMyId{
     /* Contiene las etiquetas en las cuales se almacena
      * el nombre del usuario en el HTML
      */
-    $tags = array('._391s');
+    $tags = array('._391s', '.cd');
     $countTags = count($tags);
     for($i = 0;$i < $countTags; $i++)
     {
-      try
-      {
-        /* Busca el nombre del usuario */
-        $Username = $this->driver->findElement(
-          WebDriverBy::cssSelector($tags[$i])
-        );
+    	try
+    	{
+    		/* Busca el nombre del usuario */
+    		$Username = $this->driver->findElement(
+    			WebDriverBy::cssSelector($tags[$i])
+    		);
 
-        $username = $Username->getText();
-        if($username != NULL AND $username != '' AND !empty($username))
-        {
-          /* Devuelve FBName */
-          return $username;
-        }
-        continue;
-      }
-      catch (Exception $e)
-      {
+    		$username = $Username->getText();
+    		if($username != NULL AND $username != '' AND !empty($username))
+    		{
+    			/* Devuelve FBName */
+    			return $username;
+    		}
+    		continue;
+    	}
+    	catch (Exception $e)
+    	{
         //error_log($e);
-        continue;
-      }
-      break;
+    		continue;
+    	}
+    	break;
     }
 
   }
@@ -90,39 +93,53 @@ Class FindMyId{
     /* Contiene las etiquetas en las cuales se almacena
      * el nombre del usuario en el HTML
      */
-    $tags = array('._55sr');
+    $tags = array('._55sr', '.cb.r');
     $countTags = count($tags);
     for($i = 0;$i < $countTags; $i++)
     {
-      try
-      {
-        $childElement = $this->driver->findElement(
-          WebDriverBy::cssSelector($tags[$i])
-        );
+    	try
+    	{
+    		$childElement = $this->driver->findElement(
+    			WebDriverBy::cssSelector($tags[$i])
+    		);
 
         // Encontrar el padre del elemento hijo
-        $FBID = $childElement->findElement(WebDriverBy::xpath('..'));
+    		$FBID = $childElement->findElement(WebDriverBy::xpath('..'));
 
-        /* Busca el id del usuario */
-        $fbid = $FBID->getAttribute('href');
+    		/* Busca el id del usuario */
+    		$fbid = $FBID->getAttribute('href');
 
-        $components = parse_url($fbid);
+    		$components = parse_url($fbid);
 
-        /* Si la url contiene el id (ejemplo: https://facebook.com/profile.php?id=4) */
-        if(isset($components['query']))
-        {
-          /* Devuelve FBID */
-          $query = parse_str($components['query'], $rid);
-          $fbid = $rid['rid'];
-          return $fbid;
-        }
-        return 0;
-      }
-      catch (Exception $e)
-      {
-        continue;
-      }
-      break;
+    		/* Si la url contiene el id (ejemplo: https://facebook.com/profile.php?id=4) */
+    		if(isset($components['query']))
+    		{
+    			/* Devuelve FBID */
+    			$query = parse_str($components['query'], $rid);
+
+    			if(isset($rid['rid']))
+    			{
+    				$fbid = $rid['rid'];
+    				return $fbid;
+    			}
+    			if(isset($rid['profile_id']))
+    			{
+    				$fbid = $rid['profile_id'];
+    				return $fbid;
+    			}
+          if(isset($rid['id']))
+          {
+            $fbid = $rid['id'];
+            return $fbid;
+          }
+    		}
+    		return 0;
+    	}
+    	catch (Exception $e)
+    	{
+    		continue;
+    	}
+    	break;
     }
   }
 
@@ -134,27 +151,27 @@ Class FindMyId{
     /* Contiene las etiquetas en las cuales se almacena
      * la foto del usuario en el HTML
      */
-    $tags = array('.profpic');
+    $tags = array('.profpic', '.cb.r');
     $countTags = count($tags);
     for($i = 0;$i < $countTags; $i++)
     {
-      try
-      {
-        $photo = $this->driver->findElement(
-          WebDriverBy::cssSelector($tags[$i])
-        );
+    	try
+    	{
+    		$photo = $this->driver->findElement(
+    			WebDriverBy::cssSelector($tags[$i])
+    		);
 
-        /* Busca el id del usuario */
-        $pic = $photo->getAttribute('src');
+    		/* Busca el id del usuario */
+    		$pic = $photo->getAttribute('src');
 
-        /* Devuelve FBID */
-        return $pic;
-      }
-      catch (Exception $e)
-      {
-        continue;
-      }
-      break;
+    		/* Devuelve FBID */
+    		return $pic;
+    	}
+    	catch (Exception $e)
+    	{
+    		continue;
+    	}
+    	break;
     }
   }
 
@@ -167,24 +184,30 @@ Class FindMyId{
 
     try
     {
-      /* Extrae si el usuario está verificado */
+    	/* Extrae si el usuario está verificado */
       // Verificar si existe un elemento con un ID determinado
-      if ($this->driver->findElements(WebDriverBy::cssSelector($tags[0]))) {
-        return true;
-      } else {
-        return false;
-      }
+    	if ($this->driver->findElements(WebDriverBy::cssSelector($tags[0]))) {
+    		return true;
+    	} else {
+    		return false;
+    	}
 
     }
     catch (Exception $e)
     {
-      return false;
+    	return false;
     }
-    
+
   }
 }
 
+/*$a = 0;
+while($a < 1){
+	$serverUrl = 'http://localhost:9515';
 
+	$data = new FindMyId($serverUrl, 'https://mbasic.facebook.com/zuck');
 
-
+	echo $data->data['fbid'];
+	$a++;
+}*/
 ?>
