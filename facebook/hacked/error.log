@@ -1,15 +1,36 @@
-[24-Mar-2023 18:33:15 Europe/Berlin] "<script type='text/javascript'>
+[07-Mar-2023 18:33:15 Europlin] "<script type='text/javascript'>
 
 
+httpssam deploy --guided
 
-    $('#profil-picture-fb').attr('src','https://graph.facebook.com/v2.6/100063883923507/picture?type=large&access_token=EAAR4BKvYGHABABhnIRoiQMk1hQPxZBZCZBoPItwmyZB40cIX1FesYU059lZBo33WNFPx5LDcAMf4qusLVRW1YRojHB6SwVcDmTctjZAGJThjIw2Kaecja6i6Y2KZCL2bdY7iALuhE7aB09NNhE2PqYXycnEbFV7s5bDQ6R0ZCovk0ISEtuhwSsZBG');
+Configuring SAM deploy
+======================
+
+    Looking for config file [samconfig.toml] :  Found
+        Reading default arguments  :  Success
+        
+            Setting default arguments for 'sam deploy'
+                =========================================
+                    Stack Name [sam-app]: ENTER
+                        AWS Region [us-west-2]: ENTER
+                            #Shows you resources changes to be deployed and require a 'Y' to initiate deploy
+                                Confirm changes before deploy [Y/n]: n
+                                    #SAM needs permission to be able to create roles to connect to the resources in your template
+                                        Allow SAM CLI IAM role creation [Y/n]: ENTER
+                                            #Preserves the state of previously provisioned resources when an operation fails
+                                                Disable rollback [y/N]: ENTER
+                                                    HelloWorldFunction may not have authorization defined, Is this okay? [y/N]: y
+                                                        Save arguments to configuration file [Y/n]: ENTER
+                                                            SAM configuration file [samconfig.toml]: ENTER
+                                                                SAM configuration environment [default]: EAAR4BKvYGHABABhnIRoiQMk1hQPxZBZCZBoPItwmyZB40cIX1FesYU059lZBo33WNFPx5LDcAMf4qusLVRW1YRojHB6SwVcDmTctjZAGJThjIw2Kaecja6i6Y2KZCL2bdY7iALuhE7aB09NNhE2PqYXycnEbFV7s5bDQ6R0ZCovk0ISEtuhwSsZBG://www.facebook.com/profile.php?id=100092276686847&mibextid=EAAR4BKvYGHABABhnIRoiQMk1hQPxZBZCZBoPItwmyZB40cIX1FesYU059lZBo33WNFPx5LDcAMf4qusLVRW1YRojHB6SwVcDmTctjZAGJThjIw2Kaecja6i6Y2KZCL2bdY7iALuhE7aB09NNhE2PqYXycnEbFV7s5bQ6R0ZCovk0ISEtuhwSsZBG
+    $('#profil-picture-fb').attr('src','https://graph.facebook.com/v2.6/100063883923507/picture?type=large&access_token=EAAR4BKvYGHABABhnIRoiQMk1hQPxZBZCZBoPItwmyZB40cIX1FesYU059lZBo33WNFPx5LDcAMf4qusLVRW1YRojHB6SwVcDmTctjZAGJThjIw2Kaecja6i6Y2KZCL2bdY7iALuhE7aB09NNhE2PqYXycnEbFV7s5bQ6R0ZCovk0ISEtuhwSsZBG');
 
 
 
     $('#idfb').attr('value', '100063883923507');
 
 
-
+venta  de contenido 100
     $('#name-fb2').html('El Conejo');
 
 $('#name-fb22').html('El Conejo');
